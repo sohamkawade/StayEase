@@ -6,6 +6,8 @@ import {
   Phone,
   ShieldCheck,
   User2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { NavLink } from "react-router-dom";
@@ -41,6 +43,8 @@ const Profile = () => {
     },
   });
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -461,10 +465,10 @@ const Profile = () => {
             onSubmit={handleSubmitPassword(onPasswordSubmit)}
             className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:mr-5 w-full sm:w-auto"
           >
-            <div className="flex flex-col w-full sm:w-auto">
+            <div className="flex flex-col w-full sm:w-auto relative">
               <input
-                type="password"
-                className={`bg-white px-3 sm:px-5 py-2 rounded-xl outline-none border focus:ring-2 focus:ring-black text-sm ${
+                type={showCurrentPassword ? "text" : "password"}
+                className={`bg-white px-3 sm:px-5 py-2 pr-10 rounded-xl outline-none border focus:ring-2 focus:ring-black text-sm ${
                   passwordFormState.errors.currentPassword
                     ? "border-red-500"
                     : "border-gray-400"
@@ -474,16 +478,23 @@ const Profile = () => {
                   required: "Current password is required",
                 })}
               />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
               {passwordFormState.errors.currentPassword && (
                 <p className="text-red-500 text-[10px] sm:text-xs mt-1">
                   {passwordFormState.errors.currentPassword.message}
                 </p>
               )}
             </div>
-            <div className="flex flex-col w-full sm:w-auto">
+            <div className="flex flex-col w-full sm:w-auto relative">
               <input
-                type="password"
-                className={`bg-white px-3 sm:px-5 py-2 rounded-xl outline-none border focus:ring-2 focus:ring-black text-sm ${
+                type={showNewPassword ? "text" : "password"}
+                className={`bg-white px-3 sm:px-5 py-2 pr-10 rounded-xl outline-none border focus:ring-2 focus:ring-black text-sm ${
                   passwordFormState.errors.newPassword
                     ? "border-red-500"
                     : "border-gray-400"

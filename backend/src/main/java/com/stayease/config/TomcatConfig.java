@@ -13,10 +13,10 @@ public class TomcatConfig {
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
         return factory -> {
             factory.addConnectorCustomizers(connector -> {
-                connector.setMaxPostSize(50 * 1024 * 1024); // 50MB
+                connector.setMaxPostSize(50 * 1024 * 1024);
                 if (connector.getProtocolHandler() instanceof Http11NioProtocol) {
                     Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
-                    protocol.setMaxSwallowSize(50 * 1024 * 1024); // 50MB
+                    protocol.setMaxSwallowSize(50 * 1024 * 1024);
                 }
             });
         };

@@ -57,7 +57,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception ex) {
-        // Log the exception for debugging
         ex.printStackTrace();
         String message = "An unexpected error occurred. Please try again later.";
         return ResponseEntity

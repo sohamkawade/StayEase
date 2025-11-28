@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
@@ -20,6 +20,38 @@ import Login from './pages/auth/Login'
 import SignUp from './pages/auth/SignUp'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
+import ProtectedRoute from "./components/ProtectedRoute";
+import { useAuth } from "./context/AuthContext";
+
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    const userRole = user?.role || user?.roleName;
+    const normalizedRole = userRole?.toUpperCase();
+    
+    if (location.pathname === "/login" || location.pathname === "/signup") {
+      if (normalizedRole === "ADMIN") {
+        return <Navigate to="/admin/profile" replace />;
+      } else if (normalizedRole === "HOTEL_MANAGER" || normalizedRole === "MANAGER") {
+        return <Navigate to="/manager/hotel-profile" replace />;
+      } else if (normalizedRole === "USER") {
+        return <Navigate to="/user/profile" replace />;
+      }
+    }
+  }
+
+  return children;
+};
 
 export default function App() {
   const location = useLocation();
@@ -61,10 +93,10 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/login" element={<PublicRoute><Login/></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/rooms" element={<Rooms />} />
@@ -73,9 +105,31 @@ export default function App() {
         <Route path="/room-details/:id" element={<RoomDetails />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
-        <Route path="/user/*" element={<UserRoutes />} />
-        <Route path="/admin/*" element={<AdminRoutes />} />
-        <Route path="/manager/*" element={<ManagerRoutes />} />
+        
+        <Route 
+          path="/user/*" 
+          element={
+            <ProtectedRoute allowedRoles={["USER", "ADMIN", "HOTEL_MANAGER"]}>
+              <UserRoutes />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/*" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminRoutes />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/manager/*" 
+          element={
+            <ProtectedRoute allowedRoles={["HOTEL_MANAGER", "ADMIN"]}>
+              <ManagerRoutes />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
 
       {!hideLayout && <Footer />}

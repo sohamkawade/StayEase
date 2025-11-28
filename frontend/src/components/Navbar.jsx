@@ -432,7 +432,7 @@ const Navbar = () => {
               <NavLink
                 to="/contact"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 py-3 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-[0.98] transition-all font-medium"
+                className="flex items-center gap-3 py-3 px-4 rounded-lg bg-black text-white active:scale-[0.98] transition-all font-medium"
               >
                 <Phone size={18} />
                 Contact

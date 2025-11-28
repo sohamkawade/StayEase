@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MoveRight, Hotel, Mail, Lock, Phone, User2, User } from "lucide-react";
+import { MoveRight, Hotel, Mail, Lock, Phone, User2, User, Eye, EyeOff } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { addHotel } from "../../services/apiService";
 import { useForm } from "react-hook-form";
@@ -8,6 +8,7 @@ const AddHotel = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -311,18 +312,27 @@ const AddHotel = () => {
                   <Lock size={22} className="text-gray-600" />
                   Manager Password
                 </label>
-                <input
-                  type="password"
-                  {...register("manager.password", {
-                    required: "Password is required",
-                    minLength: { value: 6, message: "At least 6 characters" },
-                  })}
-                  className={`w-1/2 bg-white px-3 py-1.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-black ${
-                    errors.manager?.password ? "border-red-500" : "border-gray-400"
-                  }`}
-                  placeholder="Manager password"
-                  minLength="6"
-                />
+                <div className="relative w-1/2">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    {...register("manager.password", {
+                      required: "Password is required",
+                      minLength: { value: 6, message: "At least 6 characters" },
+                    })}
+                    className={`w-full bg-white px-3 py-1.5 pr-10 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-black ${
+                      errors.manager?.password ? "border-red-500" : "border-gray-400"
+                    }`}
+                    placeholder="Manager password"
+                    minLength="6"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.manager?.password && (
                   <p className="mt-1 text-xs text-red-500">
                     {errors.manager.password.message}

@@ -4,12 +4,14 @@ import { useForm } from "react-hook-form";
 import { signupUser, googleOAuth } from "../../services/apiService";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: { acceptTerms: false },
@@ -231,7 +233,7 @@ const SignUp = () => {
             </div>
 
             <div className="flex flex-col md:flex-row gap-3">
-              <div className="w-full">
+              <div className="w-full relative mt-3">
                 <input
                   id="password"
                   {...register("password", {
@@ -241,19 +243,26 @@ const SignUp = () => {
                       message: "Password must be at least 6 characters"
                     }
                   })}
-                  className={`w-full bg-transparent border mt-3 outline-none rounded-xl py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 text-sm sm:text-base lg:text-sm text-black focus:ring-1 ${
+                  className={`w-full bg-transparent border outline-none rounded-xl py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 pr-10 text-sm sm:text-base lg:text-sm text-black focus:ring-1 ${
                     errors.password ? "border-red-500 focus:ring-red-500" : "border-gray-500/30 focus:ring-gray-700"
                   }`}
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
                 )}
               </div>
             </div>
 
-            <label className="flex items-start gap-2 text-xs sm:text-sm text-gray-600 mb-4">
+            <label className="flex items-start gap-2 text-xs sm:text-sm text-gray-600 mb-2">
               <input
                 type="checkbox"
                 className="mt-1 w-4 h-4 border-gray-400 rounded"
@@ -274,7 +283,7 @@ const SignUp = () => {
               </span>
             </label>
             {errors.acceptTerms && (
-              <p className="text-red-500 text-xs -mt-3 mb-3">{errors.acceptTerms.message}</p>
+              <p className="text-red-500 text-xs -mt-2 mb-2">{errors.acceptTerms.message}</p>
             )}
 
             <button

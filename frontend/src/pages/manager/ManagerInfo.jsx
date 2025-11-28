@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { NavLink } from "react-router-dom";
-import { MoveRight, User2, Mail, Phone, IdCardIcon, ShieldCheck } from "lucide-react";
+import { MoveRight, User2, Mail, Phone, IdCardIcon, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { getManagerProfile, updateManagerProfile, changeManagerPassword } from "../../services/apiService";
 import { useAuth } from "../../context/AuthContext";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,8 @@ const ManagerInfo = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [originalData, setOriginalData] = useState({});
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const { register, handleSubmit, formState, reset } = useForm({
     defaultValues: {
@@ -356,10 +358,10 @@ const ManagerInfo = () => {
             </div>
           </div>
           <form onSubmit={handleSubmitPassword(onPasswordSubmit)} className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:mr-5 w-full sm:w-auto">
-            <div className="flex flex-col flex-1 sm:flex-none">
+            <div className="flex flex-col flex-1 sm:flex-none relative">
               <input
-                type="password"
-                className={`bg-white px-3 sm:px-4 md:px-5 py-2 text-sm rounded-xl outline-none border focus:ring-2 focus:ring-black ${
+                type={showCurrentPassword ? "text" : "password"}
+                className={`bg-white px-3 sm:px-4 md:px-5 py-2 pr-10 text-sm rounded-xl outline-none border focus:ring-2 focus:ring-black ${
                   passwordFormState.errors.currentPassword ? "border-red-500" : "border-gray-400"
                 }`}
                 placeholder="Current Password"
@@ -367,14 +369,21 @@ const ManagerInfo = () => {
                   required: "Current password is required"
                 })}
               />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
               {passwordFormState.errors.currentPassword && (
                 <p className="text-red-500 text-[10px] sm:text-xs mt-1">{passwordFormState.errors.currentPassword.message}</p>
               )}
             </div>
-            <div className="flex flex-col flex-1 sm:flex-none">
+            <div className="flex flex-col flex-1 sm:flex-none relative">
               <input
-                type="password"
-                className={`bg-white px-3 sm:px-4 md:px-5 py-2 text-sm rounded-xl outline-none border focus:ring-2 focus:ring-black ${
+                type={showNewPassword ? "text" : "password"}
+                className={`bg-white px-3 sm:px-4 md:px-5 py-2 pr-10 text-sm rounded-xl outline-none border focus:ring-2 focus:ring-black ${
                   passwordFormState.errors.newPassword ? "border-red-500" : "border-gray-400"
                 }`}
                 placeholder="New Password"
@@ -386,6 +395,13 @@ const ManagerInfo = () => {
                   }
                 })}
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
               {passwordFormState.errors.newPassword && (
                 <p className="text-red-500 text-[10px] sm:text-xs mt-1">{passwordFormState.errors.newPassword.message}</p>
               )}

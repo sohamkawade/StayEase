@@ -4,6 +4,7 @@ import { loginUser, googleOAuth } from "../../services/apiService";
 import { AuthContext } from "../../context/AuthContext";
 import { useForm } from "react-hook-form";
 import { useGoogleLogin } from "@react-oauth/google";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -11,6 +12,7 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -201,23 +203,32 @@ const Login = () => {
                 {errors.email.message}
               </p>
             )}
-            <input
-              id="password"
-              className={`w-full bg-transparent border mt-1 outline-none rounded-xl py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 text-sm sm:text-base lg:text-sm text-black focus:ring-1 ${
-                errors.password
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-500/30 focus:ring-gray-700"
-              }`}
-              type="password"
-              placeholder="Enter your password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              })}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                className={`w-full bg-transparent border mt-1 outline-none rounded-xl py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 pr-10 text-sm sm:text-base lg:text-sm text-black focus:ring-1 ${
+                  errors.password
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-500/30 focus:ring-gray-700"
+                }`}
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="w-100 text-red-500 text-xs mt-1">
                 {errors.password.message}

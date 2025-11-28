@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { verifyOTPAndResetPassword } from "../../services/apiService";
+import { Eye, EyeOff } from "lucide-react";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -77,23 +80,32 @@ const ResetPassword = () => {
             <label htmlFor="newPassword" className="block text-xs sm:text-sm text-gray-600 mb-2">
               New Password
             </label>
-            <input
-              id="newPassword"
-              className={`w-full bg-white border-2 rounded-lg py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 text-sm sm:text-base lg:text-sm text-black focus:outline-none focus:ring-2 transition-all ${
-                errors.newPassword
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:border-gray-700 focus:ring-gray-200"
-              }`}
-              type="password"
-              placeholder="Enter new password"
-              {...register("newPassword", {
-                required: "New password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              })}
-            />
+            <div className="relative">
+              <input
+                id="newPassword"
+                className={`w-full bg-white border-2 rounded-lg py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 pr-10 text-sm sm:text-base lg:text-sm text-black focus:outline-none focus:ring-2 transition-all ${
+                  errors.newPassword
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-gray-700 focus:ring-gray-200"
+                }`}
+                type={showNewPassword ? "text" : "password"}
+                placeholder="Enter new password"
+                {...register("newPassword", {
+                  required: "New password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             {errors.newPassword && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.newPassword.message}
@@ -105,23 +117,32 @@ const ResetPassword = () => {
             <label htmlFor="confirmPassword" className="block text-xs sm:text-sm text-gray-600 mb-2">
               Confirm Password
             </label>
-            <input
-              id="confirmPassword"
-              className={`w-full bg-white border-2 rounded-lg py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 text-sm sm:text-base lg:text-sm text-black focus:outline-none focus:ring-2 transition-all ${
-                errors.confirmPassword
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:border-gray-700 focus:ring-gray-200"
-              }`}
-              type="password"
-              placeholder="Confirm new password"
-              {...register("confirmPassword", {
-                required: "Please confirm your password",
-                validate: (value) => {
-                  const newPassword = document.getElementById("newPassword").value;
-                  return value === newPassword || "Passwords do not match";
-                },
-              })}
-            />
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                className={`w-full bg-white border-2 rounded-lg py-2.5 sm:py-3 lg:py-2.5 px-4 lg:px-3 pr-10 text-sm sm:text-base lg:text-sm text-black focus:outline-none focus:ring-2 transition-all ${
+                  errors.confirmPassword
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-gray-700 focus:ring-gray-200"
+                }`}
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm new password"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) => {
+                    const newPassword = document.getElementById("newPassword").value;
+                    return value === newPassword || "Passwords do not match";
+                  },
+                })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.confirmPassword.message}

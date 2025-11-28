@@ -32,8 +32,27 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
 
+  const getUserRole = () => {
+    if (!user) return null;
+    return (user.role || user.roleName)?.toUpperCase();
+  };
+
+  const hasRole = (roles) => {
+    const userRole = getUserRole();
+    if (!userRole) return false;
+    return roles.some((role) => role.toUpperCase() === userRole);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      isAuthenticated, 
+      loading,
+      getUserRole,
+      hasRole
+    }}>
       {children}
     </AuthContext.Provider>
   );
