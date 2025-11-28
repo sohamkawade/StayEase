@@ -39,6 +39,19 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 413) {
+      error.response.data = {
+        ...error.response.data,
+        message: error.response.data?.message || "File size is too large. Please compress the image or use a smaller file (max 2MB recommended)."
+      };
+    }
+    return Promise.reject(error);
+  }
+);
+
 const signupUser = async (userData) => {
   return await axiosInstance.post(`${API_URL}/auth/user/signup`, userData);
 };

@@ -17,6 +17,7 @@ import {
 } from "../../services/apiService";
 import { useAuth } from "../../context/AuthContext";
 import { useForm } from "react-hook-form";
+import { compressImage } from "../../utils/imageCompression";
 
 const HotelProfile = () => {
   const navigate = useNavigate();
@@ -188,9 +189,19 @@ const HotelProfile = () => {
         },
       };
 
-      const imageFile = (hotelImage && typeof hotelImage === "object" && "name" in hotelImage)
+      let imageFile = (hotelImage && typeof hotelImage === "object" && "name" in hotelImage)
         ? hotelImage
         : null;
+
+      // Compress image if it exists and is a File object
+      if (imageFile && imageFile instanceof File) {
+        try {
+          imageFile = await compressImage(imageFile, 1920, 1080, 0.8, 2); // Max 2MB
+        } catch (compressionError) {
+          console.warn("Image compression failed, using original:", compressionError);
+          // Continue with original file if compression fails
+        }
+      }
 
       const response = await updateHotelProfile(currentHotelId, payload, imageFile);
       
@@ -224,10 +235,16 @@ const HotelProfile = () => {
       }
       setIsEditing(false);
     } catch (error) {
-      const errorMessage = error.response?.data?.message 
-        || error.response?.data?.error 
-        || error.message 
-        || "Failed to update hotel. Please try again.";
+      let errorMessage = "Failed to update hotel. Please try again.";
+      
+      if (error.response?.status === 413) {
+        errorMessage = "File size is too large. Please compress the image or use a smaller file (max 2MB recommended).";
+      } else {
+        errorMessage = error.response?.data?.message 
+          || error.response?.data?.error 
+          || error.message 
+          || errorMessage;
+      }
       
       alert(`Error: ${errorMessage}`);
     } finally {
