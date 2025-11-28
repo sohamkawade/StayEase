@@ -119,7 +119,9 @@ const EditRoom = () => {
     };
 
     const formData = new FormData();
-    formData.append("room", JSON.stringify(roomData));
+    // Create a Blob with JSON content type for the room data
+    const roomBlob = new Blob([JSON.stringify(roomData)], { type: "application/json" });
+    formData.append("room", roomBlob);
     
     if (newFiles.length > 0) {
       newFiles.forEach((file) => {
