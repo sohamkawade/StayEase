@@ -116,7 +116,7 @@ const AddRoom = () => {
     const formData = new FormData();
     // Create a Blob with JSON content type for the room data
     const roomBlob = new Blob([JSON.stringify(roomData)], { type: "application/json" });
-    formData.append("room", roomBlob);
+    formData.append("room", roomBlob, "room.json");
     files.forEach((file) => {
       formData.append("images", file);
     });
@@ -134,10 +134,15 @@ const AddRoom = () => {
       }
     } catch (error) {
       console.error("Error adding room:", error);
-      const errorMsg = error.response?.data?.message || error.message || "Unknown error";
+      console.error("Error response:", error.response);
+      console.error("Error response data:", error.response?.data);
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "Unknown error";
+      console.error("Error message:", errorMsg);
       alert("Error adding room: " + errorMsg);
       if (errorMsg.includes("already exists")) {
         setError("roomNumber", { type: "manual", message: errorMsg });
+      } else {
+        setError("root", { type: "manual", message: errorMsg });
       }
     } finally {
       setSubmitting(false);

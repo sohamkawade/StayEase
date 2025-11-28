@@ -66,15 +66,28 @@ public class RoomService {
 				if (room.getImages() == null) {
 					room.setImages(new java.util.ArrayList<>());
 				}
+				Path uploadPath = Paths.get(UPLOAD_DIR);
+				if (!Files.exists(uploadPath)) {
+					Files.createDirectories(uploadPath);
+				}
 				for (MultipartFile roomImage : roomImages) {
 					if (roomImage != null && !roomImage.isEmpty()) {
 						String originalFileName = roomImage.getOriginalFilename();
-						Path filePath = Paths.get(UPLOAD_DIR, originalFileName);
-						Files.write(filePath, roomImage.getBytes());
-						RoomImage roomImageEntity = new RoomImage();
-						roomImageEntity.setImageUrl("uploads/rooms/" + originalFileName);
-						roomImageEntity.setRoom(room);
-						room.getImages().add(roomImageEntity);
+						if (originalFileName != null && !originalFileName.isEmpty()) {
+							String fileExtension = "";
+							int lastDotIndex = originalFileName.lastIndexOf('.');
+							if (lastDotIndex > 0) {
+								fileExtension = originalFileName.substring(lastDotIndex);
+							}
+							String baseName = lastDotIndex > 0 ? originalFileName.substring(0, lastDotIndex) : originalFileName;
+							String uniqueFileName = System.currentTimeMillis() + "_" + baseName + fileExtension;
+							Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
+							Files.write(filePath, roomImage.getBytes());
+							RoomImage roomImageEntity = new RoomImage();
+							roomImageEntity.setImageUrl("uploads/rooms/" + uniqueFileName);
+							roomImageEntity.setRoom(room);
+							room.getImages().add(roomImageEntity);
+						}
 					}
 				}
 			}
@@ -82,7 +95,12 @@ public class RoomService {
 			Room savedRoom = roomRepository.save(room);
 			return universalResponse("Room added successfully!", savedRoom, HttpStatus.OK);
 		} catch (Exception e) {
-			return universalResponse("Error adding room: " + e.getMessage(), null, HttpStatus.BAD_REQUEST);
+			e.printStackTrace(); // Log the full stack trace for debugging
+			String errorMessage = "Error adding room: " + e.getMessage();
+			if (e.getCause() != null) {
+				errorMessage += " - Cause: " + e.getCause().getMessage();
+			}
+			return universalResponse(errorMessage, null, HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -235,15 +253,29 @@ public class RoomService {
 			if (persisted.getImages() == null) {
 				persisted.setImages(new java.util.ArrayList<>());
 			}
+			// Create upload directory if it doesn't exist
+			Path uploadPath = Paths.get(UPLOAD_DIR);
+			if (!Files.exists(uploadPath)) {
+				Files.createDirectories(uploadPath);
+			}
 			for (MultipartFile roomImage : roomImages) {
 				if (roomImage != null && !roomImage.isEmpty()) {
 					String originalFileName = roomImage.getOriginalFilename();
-					Path filePath = Paths.get(UPLOAD_DIR, originalFileName);
-					Files.write(filePath, roomImage.getBytes());
-					RoomImage roomImageEntity = new RoomImage();
-					roomImageEntity.setImageUrl("uploads/rooms/" + originalFileName);
-					roomImageEntity.setRoom(persisted);
-					persisted.getImages().add(roomImageEntity);
+					if (originalFileName != null && !originalFileName.isEmpty()) {
+						// Generate unique filename to avoid conflicts
+						String fileExtension = "";
+						int lastDotIndex = originalFileName.lastIndexOf('.');
+						if (lastDotIndex > 0) {
+							fileExtension = originalFileName.substring(lastDotIndex);
+						}
+						String uniqueFileName = System.currentTimeMillis() + "_" + roomId + "_" + originalFileName.substring(0, lastDotIndex > 0 ? lastDotIndex : originalFileName.length()) + fileExtension;
+						Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
+						Files.write(filePath, roomImage.getBytes());
+						RoomImage roomImageEntity = new RoomImage();
+						roomImageEntity.setImageUrl("uploads/rooms/" + uniqueFileName);
+						roomImageEntity.setRoom(persisted);
+						persisted.getImages().add(roomImageEntity);
+					}
 				}
 			}
 		}

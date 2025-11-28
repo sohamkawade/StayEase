@@ -3,6 +3,7 @@ package com.stayease.controllers;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ public class RoomController {
 
 	private final RoomService roomService;
 
-	@PostMapping("/rooms/add/{hotelId}")
+	@PostMapping(value = "/rooms/add/{hotelId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> addRoom(
 	        @PathVariable long hotelId,
 	        @RequestPart("room") String roomJson,
@@ -54,7 +55,7 @@ public class RoomController {
 		return roomService.deteleRoomById(roomId);
 	}
 	
-	@PatchMapping("/rooms/{roomId}")
+	@PatchMapping(value = "/rooms/{roomId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> updateRoomById(
 			@PathVariable Long roomId,
 			@RequestPart("room") String roomJson,
