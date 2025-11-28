@@ -49,11 +49,27 @@ public class HotelService {
 		HotelManager savedHotelManager = hotelManagerRepository.save(hotelManager);
 		hotel.setManager(savedHotelManager);
 
-		if (hotelImage != null) {
+		if (hotelImage != null && !hotelImage.isEmpty()) {
 			String originalFileName = hotelImage.getOriginalFilename();
-			Path filePath = Paths.get(UPLOAD_DIR, originalFileName);
-			Files.write(filePath, hotelImage.getBytes());
-			hotel.setHotelImage("uploads/hotels/" + originalFileName);
+			if (originalFileName != null && !originalFileName.isEmpty()) {
+				Path uploadPath = Paths.get(UPLOAD_DIR);
+				if (!Files.exists(uploadPath)) {
+					Files.createDirectories(uploadPath);
+				}
+				
+				// Generate unique filename to avoid conflicts
+				String fileExtension = "";
+				int lastDotIndex = originalFileName.lastIndexOf('.');
+				if (lastDotIndex > 0) {
+					fileExtension = originalFileName.substring(lastDotIndex);
+				}
+				String baseName = lastDotIndex > 0 ? originalFileName.substring(0, lastDotIndex) : originalFileName;
+				String uniqueFileName = System.currentTimeMillis() + "_" + baseName + fileExtension;
+				Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
+				
+				Files.write(filePath, hotelImage.getBytes());
+				hotel.setHotelImage("uploads/hotels/" + uniqueFileName);
+			}
 		}
 
 		Hotel savedHotel = hotelRepository.save(hotel);
@@ -79,11 +95,27 @@ public class HotelService {
 		Hotel hotel = objectMapper.readValue(hotelObjectStringify, Hotel.class);
 		Hotel persisted = existingHotel.get();
 
-		if (hotelImage != null) {
+		if (hotelImage != null && !hotelImage.isEmpty()) {
 			String originalFileName = hotelImage.getOriginalFilename();
-			Path filePath = Paths.get(UPLOAD_DIR, originalFileName);
-			Files.write(filePath, hotelImage.getBytes());
-			persisted.setHotelImage("uploads/hotels/" + originalFileName);
+			if (originalFileName != null && !originalFileName.isEmpty()) {
+				// Create upload directory if it doesn't exist
+				Path uploadPath = Paths.get(UPLOAD_DIR);
+				if (!Files.exists(uploadPath)) {
+					Files.createDirectories(uploadPath);
+				}
+				
+				// Generate unique filename to avoid conflicts
+				String fileExtension = "";
+				int lastDotIndex = originalFileName.lastIndexOf('.');
+				if (lastDotIndex > 0) {
+					fileExtension = originalFileName.substring(lastDotIndex);
+				}
+				String uniqueFileName = System.currentTimeMillis() + "_" + hotelId + fileExtension;
+				Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
+				
+				Files.write(filePath, hotelImage.getBytes());
+				persisted.setHotelImage("uploads/hotels/" + uniqueFileName);
+			}
 		}
 
 		if (hotel.getHotelName() != null) {
@@ -95,7 +127,9 @@ public class HotelService {
 		if (hotel.getContactNumber() != null) {
 			persisted.setContactNumber(hotel.getContactNumber());
 		}
-		persisted.setDescription(hotel.getDescription());
+		if (hotel.getDescription() != null) {
+			persisted.setDescription(hotel.getDescription());
+		}
 		if (hotel.getStarRating() != null) {
 			persisted.setStarRating(hotel.getStarRating());
 		}

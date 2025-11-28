@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -44,6 +45,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ex.getStatusCode())
                 .body(new ErrorResponse(ex.getReason(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<?> handleIOException(IOException ex) {
+        String message = "File upload failed. Please check the file and try again.";
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("FILE_UPLOAD_ERROR", message));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGenericException(Exception ex) {
+        // Log the exception for debugging
+        ex.printStackTrace();
+        String message = "An unexpected error occurred. Please try again later.";
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("INTERNAL_SERVER_ERROR", message));
     }
 
     public static class ErrorResponse {
