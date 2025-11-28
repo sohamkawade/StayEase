@@ -1,3 +1,4 @@
+
 package com.stayease.config;
 
 import org.springframework.context.annotation.Bean;
@@ -14,10 +15,9 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                            "http://localhost:5173",
-                    "https://stayease-frontend.vercel.app" 
-)
+                        .allowedOrigins("http://localhost:5173",
+                            "https://stay-ease-mocha.vercel.app"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS") 
                         .allowedHeaders("*")
                         .allowCredentials(true);
@@ -25,3 +25,4 @@ public class CorsConfig {
         };
     }
 }
+
