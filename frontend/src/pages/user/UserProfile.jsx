@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { NavLink } from "react-router-dom";
 import { getUserProfile, updateUserProfile } from "../../services/apiService";
 import { useForm } from "react-hook-form";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const UserProfile = () => {
   const { user, loading: authLoading } = useContext(AuthContext);
@@ -193,7 +194,7 @@ const UserProfile = () => {
                       typeof profilePicture === "string"
                         ? profilePicture.startsWith("http")
                           ? profilePicture
-                          : `http://localhost:8081/${profilePicture}`
+                          : getImageUrl(profilePicture)
                         : URL.createObjectURL(profilePicture)
                     }
                     className="w-full h-full object-cover"

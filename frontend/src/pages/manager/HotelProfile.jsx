@@ -18,6 +18,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useForm } from "react-hook-form";
 import { compressImage } from "../../utils/imageCompression";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const HotelProfile = () => {
   const navigate = useNavigate();
@@ -362,9 +363,7 @@ const HotelProfile = () => {
                     <img
                       src={
                         typeof hotelImage === "string"
-                          ? hotelImage.startsWith("http")
-                            ? hotelImage
-                            : `http://localhost:8081/${hotelImage}`
+                          ? getImageUrl(hotelImage)
                           : hotelImage
                           ? URL.createObjectURL(hotelImage)
                           : ""
@@ -392,9 +391,7 @@ const HotelProfile = () => {
                     <img
                       src={
                         typeof hotelImage === "string"
-                          ? hotelImage.startsWith("http")
-                            ? hotelImage
-                            : `http://localhost:8081/${hotelImage}`
+                          ? getImageUrl(hotelImage)
                           : hotelImage
                           ? URL.createObjectURL(hotelImage)
                           : ""

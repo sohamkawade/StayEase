@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/apiService";
+import { getImageUrl } from "../utils/imageUtils";
 
 const userNavItems = [
   { name: "Hotels", url: "/hotels" },
@@ -159,11 +160,7 @@ const Navbar = () => {
                     <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden ring-2 ring-white">
                       {userProfilePicture ? (
                         <img 
-                          src={
-                            userProfilePicture.startsWith('http')
-                              ? userProfilePicture
-                              : `http://localhost:8081/${userProfilePicture}`
-                          }
+                          src={getImageUrl(userProfilePicture)}
                           alt="Profile" 
                           className="w-full h-full object-cover"
                         />
@@ -252,11 +249,7 @@ const Navbar = () => {
               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-gray-100">
                 {isUser && userProfilePicture ? (
                   <img 
-                    src={
-                      userProfilePicture.startsWith('http')
-                        ? userProfilePicture
-                        : `http://localhost:8081/${userProfilePicture}`
-                    }
+                    src={getImageUrl(userProfilePicture)}
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />
