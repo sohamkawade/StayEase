@@ -30,11 +30,20 @@ const HomePage = () => {
         if (hotelsRes.status === "fulfilled" && hotelsRes.value?.status < 400) {
           const hotelsData = hotelsRes.value?.data?.data || hotelsRes.value?.data || [];
           hotelsArray = Array.isArray(hotelsData) ? hotelsData.filter((h) => h && h.id) : [];
+        } else if (hotelsRes.status === "rejected") {
+          console.error("Error fetching hotels:", hotelsRes.reason);
         }
 
         if (feedbacksRes.status === "fulfilled" && feedbacksRes.value?.status < 400) {
           const feedbacksData = feedbacksRes.value?.data?.data ?? feedbacksRes.value?.data ?? [];
           feedbacksArray = Array.isArray(feedbacksData) ? feedbacksData : [];
+          console.log("Feedbacks loaded:", feedbacksArray.length);
+        } else {
+          if (feedbacksRes.status === "rejected") {
+            console.error("Error fetching feedbacks:", feedbacksRes.reason);
+          } else if (feedbacksRes.value?.status >= 400) {
+            console.error("Feedbacks API error:", feedbacksRes.value?.status, feedbacksRes.value?.data);
+          }
         }
 
         if (hotelsArray.length > 0) {

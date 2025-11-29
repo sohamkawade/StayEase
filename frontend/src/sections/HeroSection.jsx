@@ -15,10 +15,17 @@ export default function HeroSection({ feedbacks = [] }) {
     if (!Array.isArray(feedbacks) || feedbacks.length === 0) {
       return 0;
     }
-    const ratings = feedbacks.map((f) => Number(f?.rating) || 0);
-    const sum = ratings.reduce((a, b) => a + b, 0);
-    const avg = sum / ratings.length;
-    return Number.isFinite(avg) ? avg : 0;
+    const validRatings = feedbacks
+      .map((f) => Number(f?.rating))
+      .filter((rating) => !isNaN(rating) && rating > 0 && rating <= 5);
+    
+    if (validRatings.length === 0) {
+      return 0;
+    }
+    
+    const sum = validRatings.reduce((a, b) => a + b, 0);
+    const avg = sum / validRatings.length;
+    return Number.isFinite(avg) ? Number(avg.toFixed(1)) : 0;
   }, [feedbacks]);
 
   return (
@@ -27,16 +34,18 @@ export default function HeroSection({ feedbacks = [] }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
           <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 sm:gap-10 md:gap-12 lg:gap-16">
           <div className="order-2 md:order-1">
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-white text-black font-semibold px-4 sm:px-5 py-2 sm:py-2.5 mb-4 sm:mb-5 rounded-full shadow text-xs sm:text-sm">
-              <Star className="fill-black" size={16} />
+            {avgRating > 0 && (
+              <div className="inline-flex items-center gap-2 sm:gap-3 bg-white text-black font-semibold px-4 sm:px-5 py-2 sm:py-2.5 mb-4 sm:mb-5 rounded-full shadow text-xs sm:text-sm">
+                <Star className="fill-black" size={16} />
 
-              <div className="flex flex-col leading-tight">
-                <span>{(avgRating > 0 ? avgRating : 0).toFixed(1)} Rating</span>
-                <span className="font-normal text-gray-400 text-[10px] sm:text-xs">
-                  by Guests Across India 🇮🇳
-                </span>
+                <div className="flex flex-col leading-tight">
+                  <span>{avgRating.toFixed(1)} Rating</span>
+                  <span className="font-normal text-gray-400 text-[10px] sm:text-xs">
+                    by {feedbacks?.length || 0} Guests Across India 🇮🇳
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight mb-3 sm:mb-4">
               Find Your Perfect Stay Anytime, Anywhere

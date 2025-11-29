@@ -1,5 +1,6 @@
 package com.stayease.services;
 
+import jakarta.mail.AuthenticationFailedException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -61,13 +62,24 @@ public class EmailService {
     }
 
     public void sendEmailToGuest(String toEmail, String guestName, String subject, String body) {
+        // Validate email configuration
+        if (mailSender == null) {
+            throw new RuntimeException("Email service is not configured. Please check your mail configuration.");
+        }
+        if (fromEmail == null || fromEmail.trim().isEmpty()) {
+            throw new RuntimeException("From email is not configured. Please set app.support.email in your configuration.");
+        }
+        if (toEmail == null || toEmail.trim().isEmpty()) {
+            throw new RuntimeException("Recipient email address is required.");
+        }
+        
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject(subject);
+            helper.setSubject(subject != null ? subject : "Message from " + appName);
 
             String htmlContent = """
                     <div style="font-family: 'Segoe UI', sans-serif; color: #333; background: #f9fafb; padding: 20px; border-radius: 10px;">
@@ -85,21 +97,27 @@ public class EmailService {
             mailSender.send(mimeMessage);
 
 
+        } catch (AuthenticationFailedException e) {
+            String errorMessage = "Email authentication failed. Please check your email credentials (SPRING_MAIL_USERNAME and SPRING_MAIL_PASSWORD) in your environment variables.";
+            System.err.println(errorMessage);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send email: " + errorMessage, e);
         } catch (MessagingException e) {
-            String errorMessage = "Error sending email: " + e.getMessage();
+            String errorMessage = "Error sending email: " + (e.getMessage() != null ? e.getMessage() : "Unknown messaging error");
             System.err.println(errorMessage);
             e.printStackTrace();
             if (e.getMessage() != null && (e.getMessage().toLowerCase().contains("authentication") || 
                 e.getMessage().toLowerCase().contains("535") || 
-                e.getMessage().toLowerCase().contains("auth"))) {
-                throw new RuntimeException("Failed to send email: Authentication failed. Please check your email credentials in the .env file.", e);
+                e.getMessage().toLowerCase().contains("auth") ||
+                e.getMessage().toLowerCase().contains("login"))) {
+                throw new RuntimeException("Failed to send email: Authentication failed. Please verify your email credentials (SPRING_MAIL_USERNAME and SPRING_MAIL_PASSWORD) are correctly set in your environment variables.", e);
             }
-            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + errorMessage, e);
         } catch (Exception e) {
-            String errorMessage = "Unexpected error sending email: " + e.getMessage();
+            String errorMessage = "Unexpected error sending email: " + (e.getMessage() != null ? e.getMessage() : "Unknown error");
             System.err.println(errorMessage);
             e.printStackTrace();
-            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + errorMessage, e);
         }
     }
 

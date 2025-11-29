@@ -302,7 +302,13 @@ public class BookingService {
 			emailService.sendEmailToGuest(toEmail, guestName, subject, body);
 			return universalResponse("Email sent successfully to " + guestName, null, HttpStatus.OK);
 		} catch (Exception e) {
-			return universalResponse("Failed to send email: " + e.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR);
+			String errorMessage = e.getMessage();
+			if (e.getCause() != null && e.getCause().getMessage() != null) {
+				errorMessage = e.getCause().getMessage();
+			}
+			System.err.println("Error in sendEmailToGuest: " + errorMessage);
+			e.printStackTrace();
+			return universalResponse("Failed to send email: " + errorMessage, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	

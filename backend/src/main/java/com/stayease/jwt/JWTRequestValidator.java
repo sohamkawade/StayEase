@@ -35,33 +35,49 @@ public class JWTRequestValidator extends OncePerRequestFilter {
 			FilterChain filterChain)
 			throws ServletException, IOException {
 
+		// Skip JWT validation for public endpoints if no token is present
 		final String header = request.getHeader("Authorization");
-		String jwtToken = null;
+		
+		// If no authorization header, continue without authentication (for public endpoints)
+		if (header == null || !header.startsWith("Bearer ")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		String jwtToken = header.substring(7);
 		String email = null;
 		String role = null;
 		Long userId = null;
 
-		if (header != null && header.startsWith("Bearer ")) {
-			jwtToken = header.substring(7);
-			try {
-				email = jwtTokenGenerator.extractEmail(jwtToken);
-				role = jwtTokenGenerator.extractRole(jwtToken);
-				userId = jwtTokenGenerator.extractUserId(jwtToken);
-			} catch (Exception e) {
-				System.out.println("Invalid Token: " + e.getMessage());
-			}
+		try {
+			email = jwtTokenGenerator.extractEmail(jwtToken);
+			role = jwtTokenGenerator.extractRole(jwtToken);
+			userId = jwtTokenGenerator.extractUserId(jwtToken);
+		} catch (Exception e) {
+			// Invalid token - continue without authentication (for public endpoints)
+			System.out.println("Invalid Token: " + e.getMessage());
+			filterChain.doFilter(request, response);
+			return;
 		}
 
 		if (SecurityContextHolder.getContext().getAuthentication() == null) {
 			if (userId != null) {
-				UserDetails userDetails = myUserDetailsService.loadUserById(userId);
-				if (jwtTokenGenerator.validateToken(jwtToken, userId)) {
-					setAuthentication(request, userDetails, role);
+				try {
+					UserDetails userDetails = myUserDetailsService.loadUserById(userId);
+					if (jwtTokenGenerator.validateToken(jwtToken, userId)) {
+						setAuthentication(request, userDetails, role);
+					}
+				} catch (Exception e) {
+					System.out.println("Error validating token: " + e.getMessage());
 				}
-			} else if (email != null) {
-				UserDetails userDetails = myUserDetailsService.loadByRoleAndEmail(role, email);
-				if (jwtTokenGenerator.validateToken(jwtToken, userDetails)) {
-					setAuthentication(request, userDetails, role);
+			} else if (email != null && role != null) {
+				try {
+					UserDetails userDetails = myUserDetailsService.loadByRoleAndEmail(role, email);
+					if (jwtTokenGenerator.validateToken(jwtToken, userDetails)) {
+						setAuthentication(request, userDetails, role);
+					}
+				} catch (Exception e) {
+					System.out.println("Error validating token: " + e.getMessage());
 				}
 			}
 		}
