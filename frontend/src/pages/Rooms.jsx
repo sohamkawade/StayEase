@@ -41,9 +41,21 @@ const Rooms = () => {
     const fallbackHotelId = hotel?.id ?? null;
     const fallbackHotelName = hotel?.hotelName ?? "";
     return (payload || []).map((r, idx) => {
-      const imgs = Array.isArray(r.images) ? r.images : [];
+      let imgs = [];
+      if (r.images) {
+        if (Array.isArray(r.images)) {
+          imgs = r.images;
+        } else if (typeof r.images === 'string') {
+          imgs = [{ imageUrl: r.images }];
+        } else if (r.images.imageUrl || r.images.url) {
+          imgs = [r.images];
+        }
+      }
       const allImages = imgs
-        .map((img) => toAbsolute(img?.imageUrl || img?.url || ""))
+        .map((img) => {
+          if (typeof img === 'string') return toAbsolute(img);
+          return toAbsolute(img?.imageUrl || img?.url || "");
+        })
         .filter((u) => u);
       const firstImage = allImages[0] || "";
       const normalizedHotelId = r?.hotel?.id ?? fallbackHotelId;

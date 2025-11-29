@@ -82,9 +82,21 @@ const HotelRooms = () => {
 
         const roomsData = roomsRes?.data?.data || roomsRes?.data || [];
         const normalized = (roomsData || []).map((room) => {
-          const imgs = Array.isArray(room.images) ? room.images : [];
+          let imgs = [];
+          if (room.images) {
+            if (Array.isArray(room.images)) {
+              imgs = room.images;
+            } else if (typeof room.images === 'string') {
+              imgs = [{ imageUrl: room.images }];
+            } else if (room.images.imageUrl || room.images.url) {
+              imgs = [room.images];
+            }
+          }
           const allImages = imgs
-            .map((img) => toAbsoluteUrl(img?.imageUrl || img?.url || ""))
+            .map((img) => {
+              if (typeof img === 'string') return toAbsoluteUrl(img);
+              return toAbsoluteUrl(img?.imageUrl || img?.url || "");
+            })
             .filter((u) => u);
           const firstImage = allImages[0] || "";
           

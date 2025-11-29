@@ -5,7 +5,13 @@ const TestimonialsSection = ({ feedbacks = [] }) => {
   const mappedFeedbacks = useMemo(() => {
     if (!Array.isArray(feedbacks)) return [];
     return feedbacks.map((f) => {
-      const name = f?.user ? [f.user.firstname, f.user.lastname].filter(Boolean).join(" ") : "StayEase User";
+      let name = "StayEase User";
+      if (f?.user) {
+        const firstName = f.user.firstname?.trim() || "";
+        const lastName = f.user.lastname?.trim() || "";
+        const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+        name = fullName || "StayEase User";
+      }
       return {
         id: f?.id || `${name}-${f?.date || ""}-${Math.random()}`,
         name,

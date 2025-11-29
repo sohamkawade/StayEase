@@ -25,11 +25,21 @@ const WishList = () => {
   };
 
   const getRoomImage = (room) => {
-    if (room?.images && Array.isArray(room.images) && room.images.length > 0) {
-      const firstImage = room.images[0];
-      return convertToAbsoluteUrl(
-        firstImage?.imageUrl || firstImage?.url || firstImage
-      );
+    if (room?.images) {
+      let imagesArray = [];
+      if (Array.isArray(room.images)) {
+        imagesArray = room.images;
+      } else if (typeof room.images === 'string') {
+        imagesArray = [{ imageUrl: room.images }];
+      } else if (room.images.imageUrl || room.images.url) {
+        imagesArray = [room.images];
+      }
+      if (imagesArray.length > 0) {
+        const firstImage = imagesArray[0];
+        return convertToAbsoluteUrl(
+          firstImage?.imageUrl || firstImage?.url || (typeof firstImage === 'string' ? firstImage : "")
+        );
+      }
     }
     if (room?.image) {
       return convertToAbsoluteUrl(room.image);

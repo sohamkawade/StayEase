@@ -36,10 +36,20 @@ const RoomView = () => {
             return `${origin}${p.startsWith("/") ? p : "/" + p}`;
           };
 
-          const allImages = (roomData.images || [])
+          let imagesArray = [];
+          if (roomData.images) {
+            if (Array.isArray(roomData.images)) {
+              imagesArray = roomData.images;
+            } else if (typeof roomData.images === 'string') {
+              imagesArray = [{ imageUrl: roomData.images }];
+            } else if (roomData.images.imageUrl || roomData.images.url) {
+              imagesArray = [roomData.images];
+            }
+          }
+          const allImages = imagesArray
             .map((img) => {
               if (typeof img === "string") return toAbsolute(img);
-              return toAbsolute(img.url || img.imageUrl || "");
+              return toAbsolute(img?.url || img?.imageUrl || "");
             })
             .filter((url) => url);
 

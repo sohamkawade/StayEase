@@ -53,10 +53,17 @@ public class StayEaseFeedbackService {
         return universalResponse("Thank you for your feedback!", feedback, HttpStatus.OK);
     }
     
+    @Transactional
     public ResponseEntity<?> getAllFeedbacks() {
         List<StayEaseFeedback> feedbacks = stayEaseFeedbackRepository.findAll();
         if (feedbacks.isEmpty()) {
             return universalResponse("No feedbacks available yet", List.of(), HttpStatus.OK);
+        }
+        // Ensure user data is loaded
+        for (StayEaseFeedback feedback : feedbacks) {
+            if (feedback.getUser() != null) {
+                org.hibernate.Hibernate.initialize(feedback.getUser());
+            }
         }
         return universalResponse("All feedbacks fetched successfully", feedbacks, HttpStatus.OK);
     }

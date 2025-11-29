@@ -43,7 +43,15 @@ const EditRoom = () => {
       if (/^https?:\/\//i.test(p)) return p;
       return `${origin}${p.startsWith("/") ? p : "/" + p}`;
     };
-    return (initialRoom.images || [])
+    let imagesArray = [];
+    if (Array.isArray(initialRoom.images)) {
+      imagesArray = initialRoom.images;
+    } else if (typeof initialRoom.images === 'string') {
+      imagesArray = [{ imageUrl: initialRoom.images }];
+    } else if (initialRoom.images.imageUrl || initialRoom.images.url) {
+      imagesArray = [initialRoom.images];
+    }
+    return imagesArray
       .map((img, index) => {
         const originalUrl = getImageUrl(img);
         const absoluteUrl = toAbsolute(originalUrl);

@@ -99,10 +99,20 @@ const RoomsManagement = () => {
       };
 
       const normalized = (payload || []).map((r) => {
-        const imgs = Array.isArray(r.images) ? r.images : [];
+        let imgs = [];
+        if (r.images) {
+          if (Array.isArray(r.images)) {
+            imgs = r.images;
+          } else if (typeof r.images === 'string') {
+            imgs = [{ imageUrl: r.images }];
+          } else if (r.images.imageUrl || r.images.url) {
+            imgs = [r.images];
+          }
+        }
         const allImages = imgs
           .map((img) => {
-            const rawUrl = img.imageUrl || img.url || "";
+            if (typeof img === 'string') return toAbsolute(img);
+            const rawUrl = img?.imageUrl || img?.url || "";
             return toAbsolute(rawUrl);
           })
           .filter((url) => url);

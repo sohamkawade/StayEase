@@ -86,8 +86,20 @@ public class EmailService {
 
 
         } catch (MessagingException e) {
-            System.err.println("Error sending email: " + e.getMessage());
-            throw new RuntimeException("Failed to send email", e);
+            String errorMessage = "Error sending email: " + e.getMessage();
+            System.err.println(errorMessage);
+            e.printStackTrace();
+            if (e.getMessage() != null && (e.getMessage().toLowerCase().contains("authentication") || 
+                e.getMessage().toLowerCase().contains("535") || 
+                e.getMessage().toLowerCase().contains("auth"))) {
+                throw new RuntimeException("Failed to send email: Authentication failed. Please check your email credentials in the .env file.", e);
+            }
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+        } catch (Exception e) {
+            String errorMessage = "Unexpected error sending email: " + e.getMessage();
+            System.err.println(errorMessage);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         }
     }
 

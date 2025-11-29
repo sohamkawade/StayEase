@@ -32,7 +32,15 @@ const FeaturedRoomsSection = ({ hotels = [], roomsData = [] }) => {
       }
 
       const roomsWithImages = hotelRooms.filter((r) => {
-        const imgs = Array.isArray(r.images) ? r.images : [];
+        if (!r.images) return false;
+        let imgs = [];
+        if (Array.isArray(r.images)) {
+          imgs = r.images;
+        } else if (typeof r.images === 'string') {
+          imgs = [{ imageUrl: r.images }];
+        } else if (r.images.imageUrl || r.images.url) {
+          imgs = [r.images];
+        }
         return imgs.length > 0 && (imgs[0]?.imageUrl || imgs[0]?.url);
       });
 
@@ -44,17 +52,29 @@ const FeaturedRoomsSection = ({ hotels = [], roomsData = [] }) => {
         if (roomId && usedRoomIds.has(roomId)) continue;
         usedRoomIds.add(roomId);
 
-        const imgs = Array.isArray(selectedRoom.images) ? selectedRoom.images : [];
+        let imgs = [];
+        if (selectedRoom.images) {
+          if (Array.isArray(selectedRoom.images)) {
+            imgs = selectedRoom.images;
+          } else if (typeof selectedRoom.images === 'string') {
+            imgs = [{ imageUrl: selectedRoom.images }];
+          } else if (selectedRoom.images.imageUrl || selectedRoom.images.url) {
+            imgs = [selectedRoom.images];
+          }
+        }
+        
         let imageUrl = "";
         if (imgs.length > 0) {
           const validImg = imgs.find((img) => {
-            const url = img?.imageUrl || img?.url || "";
+            if (!img) return false;
+            const url = img?.imageUrl || img?.url || (typeof img === 'string' ? img : "");
             return url && url.trim() !== "";
           });
           if (validImg) {
-            imageUrl = toAbsoluteUrl(validImg.imageUrl || validImg.url);
+            imageUrl = toAbsoluteUrl(validImg.imageUrl || validImg.url || (typeof validImg === 'string' ? validImg : ""));
           } else if (imgs[0]) {
-            imageUrl = toAbsoluteUrl(imgs[0].imageUrl || imgs[0].url || "");
+            const firstImg = imgs[0];
+            imageUrl = toAbsoluteUrl(firstImg?.imageUrl || firstImg?.url || (typeof firstImg === 'string' ? firstImg : ""));
           }
         }
 

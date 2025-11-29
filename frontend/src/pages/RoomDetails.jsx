@@ -26,7 +26,22 @@ const RoomDetails = () => {
   const checkOutDate = watch("checkOutDate");
 
   const toAbsolute = (src = "") => (/^https?:\/\//i.test(src) ? src : `${new URL(API_URL).origin}${src.startsWith("/") ? src : `/${src}`}`);
-  const formatImages = (images) => (Array.isArray(images) ? images.map((img) => toAbsolute(img?.imageUrl || img?.url || img)).filter(Boolean) : []);
+  const formatImages = (images) => {
+    if (!images) return [];
+    if (Array.isArray(images)) {
+      return images.map((img) => {
+        if (typeof img === 'string') return toAbsolute(img);
+        return toAbsolute(img?.imageUrl || img?.url || "");
+      }).filter(Boolean);
+    }
+    if (typeof images === 'string') {
+      return [toAbsolute(images)];
+    }
+    if (images.imageUrl || images.url) {
+      return [toAbsolute(images.imageUrl || images.url)];
+    }
+    return [];
+  };
   const normalizeStatus = (status) => {
     const label = (status || "").toUpperCase();
     if (label === "BOOKED") return "Booked";
