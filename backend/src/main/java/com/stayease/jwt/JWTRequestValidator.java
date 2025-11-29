@@ -35,10 +35,8 @@ public class JWTRequestValidator extends OncePerRequestFilter {
 			FilterChain filterChain)
 			throws ServletException, IOException {
 
-		// Skip JWT validation for public endpoints if no token is present
 		final String header = request.getHeader("Authorization");
 		
-		// If no authorization header, continue without authentication (for public endpoints)
 		if (header == null || !header.startsWith("Bearer ")) {
 			filterChain.doFilter(request, response);
 			return;

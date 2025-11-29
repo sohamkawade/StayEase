@@ -37,7 +37,6 @@ const HomePage = () => {
         if (feedbacksRes.status === "fulfilled" && feedbacksRes.value?.status < 400) {
           const feedbacksData = feedbacksRes.value?.data?.data ?? feedbacksRes.value?.data ?? [];
           feedbacksArray = Array.isArray(feedbacksData) ? feedbacksData : [];
-          console.log("Feedbacks loaded:", feedbacksArray.length);
         } else {
           if (feedbacksRes.status === "rejected") {
             console.error("Error fetching feedbacks:", feedbacksRes.reason);

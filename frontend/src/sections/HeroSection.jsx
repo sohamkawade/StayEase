@@ -41,7 +41,7 @@ export default function HeroSection({ feedbacks = [] }) {
                 <div className="flex flex-col leading-tight">
                   <span>{avgRating.toFixed(1)} Rating</span>
                   <span className="font-normal text-gray-400 text-[10px] sm:text-xs">
-                    by {feedbacks?.length || 0} Guests Across India 🇮🇳
+                    by Guests Across India 🇮🇳
                   </span>
                 </div>
               </div>
