@@ -1,9 +1,6 @@
 package com.stayease.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +34,7 @@ public class RoomService {
 	private final HotelRepository hotelRepository;
 	private final BookingRepository bookingRepository;
 	private final MyResponseWrapper responseWrapper;
-	private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/rooms";
+	private final CloudinaryService cloudinaryService;
 	
 	
 	@Transactional
@@ -66,27 +63,17 @@ public class RoomService {
 				if (room.getImages() == null) {
 					room.setImages(new java.util.ArrayList<>());
 				}
-				Path uploadPath = Paths.get(UPLOAD_DIR);
-				if (!Files.exists(uploadPath)) {
-					Files.createDirectories(uploadPath);
-				}
 				for (MultipartFile roomImage : roomImages) {
 					if (roomImage != null && !roomImage.isEmpty()) {
-						String originalFileName = roomImage.getOriginalFilename();
-						if (originalFileName != null && !originalFileName.isEmpty()) {
-							String fileExtension = "";
-							int lastDotIndex = originalFileName.lastIndexOf('.');
-							if (lastDotIndex > 0) {
-								fileExtension = originalFileName.substring(lastDotIndex);
+						try {
+							String imageUrl = cloudinaryService.uploadImage(roomImage, "stayease/rooms");
+							if (imageUrl != null && !imageUrl.isEmpty()) {
+								RoomImage roomImageEntity = new RoomImage();
+								roomImageEntity.setImageUrl(imageUrl);
+								roomImageEntity.setRoom(room);
+								room.getImages().add(roomImageEntity);
 							}
-							String baseName = lastDotIndex > 0 ? originalFileName.substring(0, lastDotIndex) : originalFileName;
-							String uniqueFileName = System.currentTimeMillis() + "_" + baseName + fileExtension;
-							Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
-							Files.write(filePath, roomImage.getBytes());
-							RoomImage roomImageEntity = new RoomImage();
-							roomImageEntity.setImageUrl("uploads/rooms/" + uniqueFileName);
-							roomImageEntity.setRoom(room);
-							room.getImages().add(roomImageEntity);
+						} catch (Exception e) {
 						}
 					}
 				}
@@ -95,7 +82,6 @@ public class RoomService {
 			Room savedRoom = roomRepository.save(room);
 			return universalResponse("Room added successfully!", savedRoom, HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace(); // Log the full stack trace for debugging
 			String errorMessage = "Error adding room: " + e.getMessage();
 			if (e.getCause() != null) {
 				errorMessage += " - Cause: " + e.getCause().getMessage();
@@ -253,31 +239,20 @@ public class RoomService {
 			if (persisted.getImages() == null) {
 				persisted.setImages(new java.util.ArrayList<>());
 			}
-			// Create upload directory if it doesn't exist
-			Path uploadPath = Paths.get(UPLOAD_DIR);
-			if (!Files.exists(uploadPath)) {
-				Files.createDirectories(uploadPath);
-			}
-			for (MultipartFile roomImage : roomImages) {
-				if (roomImage != null && !roomImage.isEmpty()) {
-					String originalFileName = roomImage.getOriginalFilename();
-					if (originalFileName != null && !originalFileName.isEmpty()) {
-						// Generate unique filename to avoid conflicts
-						String fileExtension = "";
-						int lastDotIndex = originalFileName.lastIndexOf('.');
-						if (lastDotIndex > 0) {
-							fileExtension = originalFileName.substring(lastDotIndex);
+				for (MultipartFile roomImage : roomImages) {
+					if (roomImage != null && !roomImage.isEmpty()) {
+						try {
+							String imageUrl = cloudinaryService.uploadImage(roomImage, "stayease/rooms");
+							if (imageUrl != null && !imageUrl.isEmpty()) {
+								RoomImage roomImageEntity = new RoomImage();
+								roomImageEntity.setImageUrl(imageUrl);
+								roomImageEntity.setRoom(persisted);
+								persisted.getImages().add(roomImageEntity);
+							}
+						} catch (Exception e) {
 						}
-						String uniqueFileName = System.currentTimeMillis() + "_" + roomId + "_" + originalFileName.substring(0, lastDotIndex > 0 ? lastDotIndex : originalFileName.length()) + fileExtension;
-						Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
-						Files.write(filePath, roomImage.getBytes());
-						RoomImage roomImageEntity = new RoomImage();
-						roomImageEntity.setImageUrl("uploads/rooms/" + uniqueFileName);
-						roomImageEntity.setRoom(persisted);
-						persisted.getImages().add(roomImageEntity);
 					}
 				}
-			}
 		}
 
 		persisted.setRoomNumber(room.getRoomNumber());

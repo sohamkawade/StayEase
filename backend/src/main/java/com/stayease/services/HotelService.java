@@ -1,9 +1,6 @@
 package com.stayease.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +33,7 @@ public class HotelService {
 	private final MyResponseWrapper responseWrapper;
 	private final PasswordEncoder passwordEncoder;
 	private final WhatsAppService whatsAppService;
-	private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/hotels";
+	private final CloudinaryService cloudinaryService;
 
 	@Transactional
 	public ResponseEntity<?> addHotel(String hotelObjectStringify, MultipartFile hotelImage) throws IOException {
@@ -50,25 +47,9 @@ public class HotelService {
 		hotel.setManager(savedHotelManager);
 
 		if (hotelImage != null && !hotelImage.isEmpty()) {
-			String originalFileName = hotelImage.getOriginalFilename();
-			if (originalFileName != null && !originalFileName.isEmpty()) {
-				Path uploadPath = Paths.get(UPLOAD_DIR);
-				if (!Files.exists(uploadPath)) {
-					Files.createDirectories(uploadPath);
-				}
-				
-				// Generate unique filename to avoid conflicts
-				String fileExtension = "";
-				int lastDotIndex = originalFileName.lastIndexOf('.');
-				if (lastDotIndex > 0) {
-					fileExtension = originalFileName.substring(lastDotIndex);
-				}
-				String baseName = lastDotIndex > 0 ? originalFileName.substring(0, lastDotIndex) : originalFileName;
-				String uniqueFileName = System.currentTimeMillis() + "_" + baseName + fileExtension;
-				Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
-				
-				Files.write(filePath, hotelImage.getBytes());
-				hotel.setHotelImage("uploads/hotels/" + uniqueFileName);
+			String imageUrl = cloudinaryService.uploadImage(hotelImage, "stayease/hotels");
+			if (imageUrl != null && !imageUrl.isEmpty()) {
+				hotel.setHotelImage(imageUrl);
 			}
 		}
 
@@ -96,25 +77,9 @@ public class HotelService {
 		Hotel persisted = existingHotel.get();
 
 		if (hotelImage != null && !hotelImage.isEmpty()) {
-			String originalFileName = hotelImage.getOriginalFilename();
-			if (originalFileName != null && !originalFileName.isEmpty()) {
-				// Create upload directory if it doesn't exist
-				Path uploadPath = Paths.get(UPLOAD_DIR);
-				if (!Files.exists(uploadPath)) {
-					Files.createDirectories(uploadPath);
-				}
-				
-				// Generate unique filename to avoid conflicts
-				String fileExtension = "";
-				int lastDotIndex = originalFileName.lastIndexOf('.');
-				if (lastDotIndex > 0) {
-					fileExtension = originalFileName.substring(lastDotIndex);
-				}
-				String uniqueFileName = System.currentTimeMillis() + "_" + hotelId + fileExtension;
-				Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
-				
-				Files.write(filePath, hotelImage.getBytes());
-				persisted.setHotelImage("uploads/hotels/" + uniqueFileName);
+			String imageUrl = cloudinaryService.uploadImage(hotelImage, "stayease/hotels");
+			if (imageUrl != null && !imageUrl.isEmpty()) {
+				persisted.setHotelImage(imageUrl);
 			}
 		}
 

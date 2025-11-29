@@ -1,13 +1,8 @@
 package com.stayease.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -33,8 +28,8 @@ public class AppUserService {
 	private final AppUserRepository appUserRepository;
 	private final MyResponseWrapper responseWrapper;
 	private final UserRepository userRepository;
+	private final CloudinaryService cloudinaryService;
 //	private final PasswordEncoder passwordEncoder;
-	private static final String UPLOAD_DIR = "uploads/profile_pictures/";
 
 	public ResponseEntity<?> getUserById(long userId) {
 		Optional<AppUser> existingUser = appUserRepository.findById(userId);
@@ -85,8 +80,10 @@ public class AppUserService {
 			}
 		}
 		if (profilePicture != null && !profilePicture.isEmpty()) {
-			String savedPath = saveFile(profilePicture);
-			existingUser.setProfilePicture(savedPath);
+			String imageUrl = cloudinaryService.uploadImage(profilePicture, "stayease/profile_pictures");
+			if (imageUrl != null && !imageUrl.isEmpty()) {
+				existingUser.setProfilePicture(imageUrl);
+			}
 		}
 		if (user.getProfilePicture() != null && user.getProfilePicture().isEmpty()) {
 			existingUser.setProfilePicture(null);
@@ -96,21 +93,6 @@ public class AppUserService {
 		return universalResponse("User updated successfully!", savedUser, HttpStatus.OK);
 	}
 
-	private String saveFile(MultipartFile file) throws IOException {
-		Path uploadPath = Paths.get(UPLOAD_DIR);
-		if (!Files.exists(uploadPath)) {
-			Files.createDirectories(uploadPath);
-		}
-
-		String originalFileName = file.getOriginalFilename();
-		String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-		String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
-
-		Path filePath = uploadPath.resolve(uniqueFileName);
-		Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-		return "uploads/profile_pictures/" + uniqueFileName;
-	}
 
 	public ResponseEntity<?> deleteUser(long userId) {
 		Optional<AppUser> existingUser = appUserRepository.findById(userId);

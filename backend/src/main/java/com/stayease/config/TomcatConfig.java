@@ -1,6 +1,5 @@
 package com.stayease.config;
 
-import org.apache.coyote.http11.Http11NioProtocol;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -14,10 +13,6 @@ public class TomcatConfig {
         return factory -> {
             factory.addConnectorCustomizers(connector -> {
                 connector.setMaxPostSize(50 * 1024 * 1024);
-                if (connector.getProtocolHandler() instanceof Http11NioProtocol) {
-                    Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
-                    protocol.setMaxSwallowSize(50 * 1024 * 1024);
-                }
             });
         };
     }
