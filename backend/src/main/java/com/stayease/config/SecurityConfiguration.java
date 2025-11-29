@@ -48,13 +48,13 @@ public class SecurityConfiguration {
             "/api/room/**",
             "/api/feedbacks",
             "/api/feedback/hotel/**",
-            "/api/feedback/user/**"
+            "/api/feedback/user/**",
+            "/api/stats/**",
     };
 
     private static final String[] ADMIN_ONLY_ENDPOINTS = {
             "/api/admin/**",
             "/api/auth/admin/**",
-            "/api/stats/**",
             "/api/get-messages",
             "/api/message/**",
             "/api/users"
