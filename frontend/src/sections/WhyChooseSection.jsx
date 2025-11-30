@@ -46,10 +46,10 @@ const WhyChooseSection = () => {
                   <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-black text-white mb-3 sm:mb-4">
                     <Icon size={20} />
                   </div>
-                  <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-[15px] sm:text-[15px] md:text-[18px] font-semibold text-gray-900 mb-2">
                     {reason.title}
                   </h3>
-                  <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
+                  <p className="text-[13px] sm:text-[13px] md:text-[13px] text-gray-600 leading-relaxed">
                     {reason.description}
                   </p>
                 </div>

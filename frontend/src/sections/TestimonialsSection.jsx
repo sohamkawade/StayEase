@@ -30,7 +30,7 @@ const TestimonialsSection = ({ feedbacks = [] }) => {
           date: f?.date || "",
         };
       })
-      .sort((a, b) => new Date(b.date) - new Date(a.date)); 
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [feedbacks]);
 
   const visibleFeedbacks = isDesktop
@@ -38,9 +38,8 @@ const TestimonialsSection = ({ feedbacks = [] }) => {
     : mappedFeedbacks.slice(0, 4);
 
   return (
-    <section className="py-10 sm:py-14 md:py-16 lg:py-20 bg-gray-50">
+    <section className="py-10 sm:py-14 md:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-
         <div className="text-center mb-10">
           <p className="uppercase tracking-widest text-xs text-gray-500">
             user feedback
@@ -77,7 +76,7 @@ const TestimonialsSection = ({ feedbacks = [] }) => {
                 </div>
 
                 {item.comment && (
-                  <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                  <p className="text-[13px] md:text-[13px] text-gray-700 leading-relaxed">
                     "{item.comment}"
                   </p>
                 )}
@@ -92,7 +91,6 @@ const TestimonialsSection = ({ feedbacks = [] }) => {
             ))
           )}
         </div>
-
       </div>
     </section>
   );
