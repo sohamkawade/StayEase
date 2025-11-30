@@ -4,8 +4,8 @@ import { Headset, BadgeCheck, Building2 } from "lucide-react";
 const reasons = [
   {
     icon: Building2,
-    title: "100+ Hotels Worldwide",
-    description: "Curated stays across popular destinations and hidden gems.",
+    title: "100+ Hotels Across India",
+    description: "Curated stays in popular Indian cities and hidden gems.",
   },
   {
     icon: BadgeCheck,
@@ -31,7 +31,10 @@ const WhyChooseSection = () => {
             StayEase makes travel simple and stress-free
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6" style={{ opacity: 1 }}>
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6"
+          style={{ opacity: 1 }}
+        >
           <>
             {reasons.map((reason) => {
               const Icon = reason.icon;

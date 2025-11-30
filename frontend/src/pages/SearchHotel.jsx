@@ -187,11 +187,6 @@ const SearchHotel = () => {
                 />
               ))}
             </div>
-            {hotels.length > 6 && (
-              <div className="text-center mt-4 text-sm text-gray-600">
-                Showing 6 of {hotels.length} hotels
-              </div>
-            )}
           </>
         )}
       </div>
