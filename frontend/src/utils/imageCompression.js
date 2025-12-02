@@ -73,4 +73,3 @@ export const compressImage = async (file, maxWidth = 1920, maxHeight = 1080, qua
     reader.onerror = () => reject(new Error('Failed to read file'));
   });
 };
-
