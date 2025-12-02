@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink } from "react-router-dom";
-import { MoveRight, Star, User, Calendar } from "lucide-react";
-import { getFeedbackByHotelId, getAllHotels } from "../../services/apiService";
+import { MoveRight, Star, User, Calendar, Trash2 } from "lucide-react";
+import { getFeedbackByHotelId, getAllHotels, deleteHotelFeedback } from "../../services/apiService";
 import { useAuth } from "../../context/AuthContext";
 
 const FeedbackRatings = () => {
@@ -76,6 +76,23 @@ const FeedbackRatings = () => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this feedback?')) {
+      return;
+    }
+
+    try {
+      const res = await deleteHotelFeedback(id);
+      if (res?.status === 200 || res?.status === 201) {
+        await fetchFeedbacks();
+      } else {
+        alert('Failed to delete feedback');
+      }
+    } catch (err) {
+      alert('Failed to delete feedback');
+    }
   };
 
   if (loading) {
@@ -175,12 +192,20 @@ const FeedbackRatings = () => {
                       </div>
                     </div>
                   </div>
-                  {feedback.date && (
-                    <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 flex-shrink-0 sm:ml-4">
-                      <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      <span>{formatDate(feedback.date)}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {feedback.date && (
+                      <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 sm:ml-4">
+                        <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <span>{formatDate(feedback.date)}</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => handleDelete(feedback.id)}
+                      className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
                 {feedback.comment && (
                   <p className="text-sm sm:text-base text-gray-700 mt-2 sm:mt-3 pl-0 sm:pl-11">{feedback.comment}</p>

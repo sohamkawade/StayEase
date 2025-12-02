@@ -22,7 +22,7 @@ public class CloudinaryService {
         }
 
         if (cloudinary == null) {
-            throw new IllegalStateException("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables.");
+            throw new IllegalStateException("Cloudinary is not configured.");
         }
 
         try {

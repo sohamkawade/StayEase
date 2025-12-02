@@ -1,46 +1,72 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { MoveRight, Star, MessageSquare } from "lucide-react";
-import { getAllStayEaseFeedbacks } from "../../services/apiService";
+import { MoveRight, Star, MessageSquare, Trash2 } from "lucide-react";
+import { getAllStayEaseFeedbacks, deleteStayEaseFeedback } from "../../services/apiService";
 
 const Feedback = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [averageRating, setAverageRating] = useState(0);
 
+  const fetchFeedbacks = async () => {
+    setLoading(true);
+    try {
+      const res = await getAllStayEaseFeedbacks();
+      const data = res?.data?.data ?? res?.data ?? [];
+      const normalized = Array.isArray(data)
+        ? data.map((f) => ({
+            id: f?.id,
+            name: f?.user
+              ? [f.user.firstname, f.user.lastname].filter(Boolean).join(" ")
+              : "Guest",
+            rating: Number(f?.rating) || 0,
+            comment: f?.message || "",
+            date: f?.date || "",
+          }))
+        : [];
+      setFeedbacks(normalized);
+      if (normalized.length > 0) {
+        const sum = normalized.reduce((acc, it) => acc + (it.rating || 0), 0);
+        setAverageRating(sum / normalized.length);
+      } else {
+        setAverageRating(0);
+      }
+    } catch {
+      setFeedbacks([]);
+      setAverageRating(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const res = await getAllStayEaseFeedbacks();
-        const data = res?.data?.data ?? res?.data ?? [];
-        const normalized = Array.isArray(data)
-          ? data.map((f) => ({
-              id: f?.id,
-              name: f?.user
-                ? [f.user.firstname, f.user.lastname].filter(Boolean).join(" ")
-                : "Guest",
-              rating: Number(f?.rating) || 0,
-              comment: f?.message || "",
-              date: f?.date || "",
-            }))
-          : [];
-        setFeedbacks(normalized);
-        if (normalized.length > 0) {
-          const sum = normalized.reduce((acc, it) => acc + (it.rating || 0), 0);
-          setAverageRating(sum / normalized.length);
+    fetchFeedbacks();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this feedback?')) {
+      return;
+    }
+
+    try {
+      const res = await deleteStayEaseFeedback(id);
+      if (res?.status === 200 || res?.status === 201) {
+        setFeedbacks(feedbacks.filter((f) => f.id !== id));
+        // Recalculate average rating
+        const remaining = feedbacks.filter((f) => f.id !== id);
+        if (remaining.length > 0) {
+          const sum = remaining.reduce((acc, it) => acc + (it.rating || 0), 0);
+          setAverageRating(sum / remaining.length);
         } else {
           setAverageRating(0);
         }
-      } catch {
-        setFeedbacks([]);
-        setAverageRating(0);
-      } finally {
-        setLoading(false);
+      } else {
+        alert('Failed to delete feedback');
       }
-    };
-    load();
-  }, []);
+    } catch (err) {
+      alert('Failed to delete feedback');
+    }
+  };
 
   if (loading) {
     return (
@@ -124,18 +150,26 @@ const Feedback = () => {
                       ) : null}
                     </div>
                   </div>
-                  <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        size={14}
-                        className={
-                          star <= Math.round(f.rating)
-                            ? "text-yellow-500 fill-yellow-500"
-                            : "text-gray-300"
-                        }
-                      />
-                    ))}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-0.5 sm:gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={14}
+                          className={
+                            star <= Math.round(f.rating)
+                              ? "text-yellow-500 fill-yellow-500"
+                              : "text-gray-300"
+                          }
+                        />
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => handleDelete(f.id)}
+                      className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
                 </div>
                 {f.comment ? (

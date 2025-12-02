@@ -86,5 +86,20 @@ public class HotelFeedbackService {
         List<HotelFeedback> feedbacks = feedbackRepository.findByUserId(userId);
         return universalResponse("Feedbacks fetched successfully", feedbacks, HttpStatus.OK);
     }
+
+    @Transactional
+    public ResponseEntity<?> deleteFeedback(Long id) {
+        Optional<HotelFeedback> existingFeedback = feedbackRepository.findById(id);
+        if (existingFeedback.isPresent()) {
+            HotelFeedback feedback = existingFeedback.get();
+            Long hotelId = feedback.getHotel().getId();
+            feedbackRepository.delete(feedback);
+            // Update hotel rating after deletion
+            updateHotelRating(hotelId);
+            return universalResponse("Feedback deleted successfully", null, HttpStatus.OK);
+        } else {
+            return universalResponse("There is no feedback with id: " + id, null, HttpStatus.NOT_FOUND);
+        }
+    }
 }
 

@@ -67,4 +67,15 @@ public class StayEaseFeedbackService {
         }
         return universalResponse("All feedbacks fetched successfully", feedbacks, HttpStatus.OK);
     }
+
+    @Transactional
+    public ResponseEntity<?> deleteFeedback(Long id) {
+        Optional<StayEaseFeedback> existingFeedback = stayEaseFeedbackRepository.findById(id);
+        if (existingFeedback.isPresent()) {
+            stayEaseFeedbackRepository.delete(existingFeedback.get());
+            return universalResponse("Feedback deleted successfully", null, HttpStatus.OK);
+        } else {
+            return universalResponse("There is no feedback with id: " + id, null, HttpStatus.NOT_FOUND);
+        }
+    }
 }

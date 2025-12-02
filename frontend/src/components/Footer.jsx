@@ -26,21 +26,7 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-300 hover:text-white transition">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/hotels" className="text-gray-300 hover:text-white transition">
-                  Hotels
-                </Link>
-              </li>
-              <li>
-                <Link to="/rooms" className="text-gray-300 hover:text-white transition">
-                  Rooms
-                </Link>
-              </li>
+
               <li>
                 <Link to="/contact" className="text-gray-300 hover:text-white transition">
                   Contact
@@ -65,7 +51,7 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Mail className="text-gray-300" size={18} />
                 <a href="mailto:steyease.team@gmail.com" className="text-gray-300 hover:text-white transition">
-                  steyease.team@gmail.com
+                  stayease.team@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-3">

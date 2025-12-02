@@ -308,6 +308,14 @@ const getAllStayEaseFeedbacks = async () => {
   return await axiosInstance.get(`${API_URL}/feedbacks`);
 };
 
+const deleteStayEaseFeedback = async (id) => {
+  return await axiosInstance.delete(`${API_URL}/stayease-feedback/${id}`);
+};
+
+const deleteHotelFeedback = async (id) => {
+  return await axiosInstance.delete(`${API_URL}/feedback/${id}`);
+};
+
 const sendForgotPasswordOTP = async (email) => {
   return await axiosInstance.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
 };
@@ -395,7 +403,9 @@ export {
   getStats,
   sendContactMessage,
   getAllContactMessages,
-  deleteContactMessage
+  deleteContactMessage,
+  deleteStayEaseFeedback,
+  deleteHotelFeedback
 };
 
 
