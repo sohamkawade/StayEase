@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate, useParams, Link } from "react-router-dom";
-import { MoveRight, Calendar, User, CreditCard, Phone, Mail} from "lucide-react";
+import { MoveRight, Calendar, User, Phone, Mail} from "lucide-react";
 import { getRoomByRoomId, getHotelBookings, getAllHotels } from "../../services/apiService";
 import { useAuth } from "../../context/AuthContext";
 
@@ -136,7 +136,6 @@ const BookingView = () => {
   };
   const duration = currentBooking.duration || calculateDuration(checkIn, checkOut);
   
-  const paymentMethod = currentBooking.paymentMethod || "N/A";
   const paymentStatus = currentBooking.paymentStatus || (currentBooking.paymentStatus === undefined ? "PENDING" : "");
   const amount = currentBooking.amount || currentBooking.totalAmount || 0;
   
@@ -250,13 +249,6 @@ const BookingView = () => {
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
             <h4 className="text-base sm:text-lg font-bold text-black mb-3 sm:mb-4">Payment Information</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="flex items-start gap-2 sm:gap-3">
-                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 mt-1 flex-shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Payment Method</p>
-                  <p className="text-xs sm:text-sm font-medium text-black">{paymentMethod || "-"}</p>
-                </div>
-              </div>
               <div>
                 <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Payment Status</p>
                 <p className="text-xs sm:text-sm font-medium text-black">{paymentStatus || "PENDING"}</p>

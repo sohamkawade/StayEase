@@ -3,8 +3,9 @@ import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { Star, MapPin, Phone, Mail, Calendar, Users, Bed, Eye, Wifi, Car, Waves, Wind, Utensils, Tv, Coffee, MoveRight, Heart } from "lucide-react";
-import { API_URL, getRoomByRoomId, getAllRoomsByHotelId, getHotelById, bookRoom, addToWishlist, getUserWishlist, removeFromWishlist } from "../services/apiService";
+import { API_URL, getRoomByRoomId, getAllRoomsByHotelId, getHotelById, bookRoom, addToWishlist, getUserWishlist, removeFromWishlist, createPaymentOrder, verifyPayment, markPaymentFailed, cancelPayment } from "../services/apiService";
 import { useAuth } from "../context/AuthContext";
+import { loadRazorpayScript } from "../utils/razorpayLoader";
 
 const RoomDetails = () => {
   const { id } = useParams();
@@ -254,14 +255,152 @@ const RoomDetails = () => {
     const session = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
 
     try {
-      const res = await bookRoom(room.id, session.id || session.userId, data.totalGuests, data.checkInDate, data.checkOutDate);
-      if (res?.status >= 200 && res?.status < 400) {
-        navigate("/user/my-bookings", { state: { room, hotel, ...data } });
-      } else {
-        throw new Error(res?.data?.message || "Failed to book room");
+      const nights = checkInDate && checkOutDate && new Date(checkOutDate) > new Date(checkInDate)
+        ? Math.ceil((new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24))
+        : 1;
+      const totalAmount = room.price * nights;
+
+      const bookingRes = await bookRoom(room.id, session.id || session.userId, data.totalGuests, data.checkInDate, data.checkOutDate);
+      
+      if (bookingRes?.status < 200 || bookingRes?.status >= 400) {
+        throw new Error(bookingRes?.data?.message || "Failed to book room");
       }
+
+      const booking = bookingRes?.data?.data || bookingRes?.data;
+      const bookingId = booking?.id;
+
+      if (!bookingId) {
+        throw new Error("Booking ID not found in response");
+      }
+
+      const orderRes = await createPaymentOrder(bookingId, totalAmount, "INR");
+      
+      if (orderRes?.status < 200 || orderRes?.status >= 400) {
+        throw new Error(orderRes?.data?.message || "Failed to create payment order");
+      }
+
+      const orderData = orderRes?.data?.data || orderRes?.data;
+
+      const options = {
+        key: orderData.keyId || "rzp_test_1DP5mmOlF5G5ag",
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        name: "StayEase Hotel Booking",
+        description: `Payment for Room ${room.roomNumber} - ${room.roomType}`,
+        handler: async function (response) {
+          try {
+            const verifyRes = await verifyPayment(
+              bookingId,
+              response.razorpay_order_id || orderData.orderId,
+              response.razorpay_payment_id,
+              response.razorpay_signature
+            );
+
+            if (verifyRes?.status >= 200 && verifyRes?.status < 400) {
+              toast.success("Payment successful! Booking confirmed.", {
+                position: "top-center",
+                autoClose: 3000,
+              });
+              navigate("/user/my-bookings", { state: { room, hotel, ...data } });
+            } else {
+              throw new Error(verifyRes?.data?.message || "Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment verification error:", error);
+            try {
+              await markPaymentFailed(bookingId);
+            } catch (deleteError) {
+              console.error("Error deleting booking after verification failure:", deleteError);
+            }
+            toast.error(error?.response?.data?.message || error?.message || "Payment verification failed", {
+              position: "top-center",
+              autoClose: 5000,
+            });
+          }
+        },
+        prefill: {
+          name: `${user?.firstname || ""} ${user?.lastname || ""}`.trim() || "Guest",
+          email: user?.email || "",
+          contact: user?.contactNumber || "",
+        },
+        theme: {
+          color: "#000000",
+        },
+        modal: {
+          ondismiss: async function () {
+            try {
+              await cancelPayment(bookingId);
+              toast.info("Payment cancelled.", {
+                position: "top-center",
+                autoClose: 3000,
+              });
+            } catch (error) {
+              console.error("Error cancelling payment:", error);
+              toast.info("Payment cancelled", {
+                position: "top-center",
+                autoClose: 2000,
+              });
+            }
+          },
+        },
+      };
+
+      try {
+        await loadRazorpayScript();
+        
+        if (window.Razorpay) {
+          const razorpay = new window.Razorpay(options);          
+          razorpay.on("payment.failed", async function (response) {
+            try {
+              await markPaymentFailed(bookingId);
+              toast.error("Payment failed: " + (response.error.description || "Unknown error"), {
+                position: "top-center",
+                autoClose: 5000,
+              });
+            } catch (error) {
+              console.error("Payment failure handling error:", error);
+              toast.error("Payment failed: " + (response.error.description || "Unknown error"), {
+                position: "top-center",
+                autoClose: 5000,
+              });
+            }
+          });
+
+          razorpay.on("payment.error", async function (response) {
+            try {
+              await markPaymentFailed(bookingId);
+              toast.error("Payment error: " + (response.error.description || "Unknown error"), {
+                position: "top-center",
+                autoClose: 5000,
+              });
+            } catch (error) {
+              console.error("Payment error handling:", error);
+              toast.error("Payment error: " + (response.error.description || "Unknown error"), {
+                position: "top-center",
+                autoClose: 5000,
+              });
+            }
+          });
+
+          razorpay.open();
+        } else {
+          throw new Error("Razorpay failed to load");
+        }
+      } catch (error) {
+        console.error("Razorpay loading error:", error);
+        toast.error("Failed to load payment gateway. Please check your Razorpay test keys.", {
+          position: "top-center",
+          autoClose: 5000,
+        });
+      }
+
     } catch (error) {
+      console.error("Booking error:", error);
       setPageError(error?.response?.data?.message || error?.message || "Failed to book room. Please try again.");
+      toast.error(error?.response?.data?.message || error?.message || "Failed to book room. Please try again.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
     }
   };
 
@@ -664,6 +803,7 @@ const RoomDetails = () => {
       </div>
       </div>
       </div>
+
     </>
   );
 };

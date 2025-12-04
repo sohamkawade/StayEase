@@ -102,6 +102,29 @@ const MyBookings = () => {
     fetchBookings();
   }, [fetchBookings]);
 
+  const canCancelBooking = (booking) => {
+    if (!booking) return false;
+    
+    const status = booking.status?.toLowerCase() || "";
+    if (["cancelled", "completed", "checked-out", "checked-in"].includes(status)) {
+      return false;
+    }
+    
+    if (!booking.checkIn) return false;
+    
+    try {
+      const checkInDate = new Date(booking.checkIn);
+      const now = new Date();
+      const diffTime = checkInDate - now;
+      const diffHours = diffTime / (1000 * 60 * 60);
+      
+      return diffHours > 1;
+    } catch (error) {
+      console.error("Error calculating cancellation time:", error);
+      return false;
+    }
+  };
+
   const formatBooking = (booking) => {
     let status = (booking.bookingStatus || "")
       .toString()
@@ -450,7 +473,7 @@ const MyBookings = () => {
                             <Eye size={14} />
                             <span className="text-[10px] sm:text-xs font-semibold">View</span>
                           </button>
-                          {!["cancelled", "completed", "checked-out"].includes(booking.status) && (
+                          {canCancelBooking(booking) && (
                             <button
                               onClick={() => handleCancelBooking(booking)}
                               className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all hover:scale-95 inline-flex items-center gap-1 whitespace-nowrap shadow border-none"
@@ -564,7 +587,7 @@ const MyBookings = () => {
               </div>
             </div>
             <div className="p-4 sm:p-6 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-3">
-              {!["cancelled", "completed", "checked-out"].includes(selectedBooking.status) && (
+              {canCancelBooking(selectedBooking) && (
                 <button
                   onClick={() => {
                     const bookingToCancel = bookings.find(

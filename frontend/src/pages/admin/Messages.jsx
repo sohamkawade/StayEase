@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Trash2, Calendar, User, Phone } from 'lucide-react';
+import { Mail, Trash2, Calendar, User, Phone, MoveRight } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { deleteContactMessage, getAllContactMessages } from '../../services/apiService';
 
 const Messages = () => {
@@ -72,29 +73,43 @@ const Messages = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Contact Messages</h1>
+    <>
+      <div className="flex items-center justify-center mb-3 sm:mb-4 gap-2">
+        <NavLink to="/">
+          <span className="text-xs sm:text-sm text-gray-500 hover:text-gray-800 transition-all duration-300">
+            back to home
+          </span>
+        </NavLink>
+        <MoveRight className="text-gray-500 -rotate-180" size={12} />
+        <span className="text-xs sm:text-sm font-semibold">Contact Messages</span>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm">
-          {error}
+      <div className="flex flex-col w-full bg-gray-200 text-gray-800 p-4 sm:p-6 md:p-10 lg:p-14 rounded-2xl">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-gray-900 tracking-wide">
+            Contact Messages
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600">Messages from users</p>
         </div>
-      )}
 
-      {messages.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center">
-          <Mail size={40} className="mx-auto text-gray-400 mb-3 sm:mb-4" />
-          <p className="text-gray-600 text-sm sm:text-base md:text-lg">No messages found</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow"
-            >
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm mb-4 sm:mb-6">
+            {error}
+          </div>
+        )}
+
+        {messages.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-12 text-center">
+            <Mail size={40} className="mx-auto text-gray-400 mb-3 sm:mb-4" />
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg">No messages found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 hover:shadow-2xl transition-shadow"
+              >
               <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                   <div className="bg-black text-white p-1.5 sm:p-2 rounded-lg flex-shrink-0">
@@ -138,7 +153,8 @@ const Messages = () => {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

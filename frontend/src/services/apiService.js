@@ -353,6 +353,39 @@ const updateRoomById = async (roomId, formData) => {
   });
 };
 
+const createPaymentOrder = async (bookingId, amount, currency = "INR") => {
+  return await axiosInstance.post(`${API_URL}/payment/create-order`, {
+    bookingId,
+    amount,
+    currency
+  });
+};
+
+const verifyPayment = async (bookingId, razorpayOrderId, razorpayPaymentId, razorpaySignature) => {
+  return await axiosInstance.post(`${API_URL}/payment/verify`, {
+    bookingId,
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature
+  });
+};
+
+const markPaymentFailed = async (bookingId) => {
+  return await axiosInstance.post(`${API_URL}/payment/failed`, {
+    bookingId
+  });
+};
+
+const cancelPayment = async (bookingId) => {
+  return await axiosInstance.post(`${API_URL}/payment/cancel`, {
+    bookingId
+  });
+};
+
+const getUserTransactions = async (userId) => {
+  return await axiosInstance.get(`${API_URL}/payments/user/${userId}`);
+};
+
 export {
   API_URL,
   signupUser,
@@ -405,7 +438,12 @@ export {
   getAllContactMessages,
   deleteContactMessage,
   deleteStayEaseFeedback,
-  deleteHotelFeedback
+  deleteHotelFeedback,
+  createPaymentOrder,
+  verifyPayment,
+  markPaymentFailed,
+  cancelPayment,
+  getUserTransactions
 };
 
 

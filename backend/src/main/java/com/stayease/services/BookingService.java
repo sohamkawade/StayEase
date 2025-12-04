@@ -1,7 +1,10 @@
 package com.stayease.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -39,7 +42,7 @@ public class BookingService {
 	private final WhatsAppService whatsAppService;
 	private final EmailService emailService;
 	
-	@Value("${app.booking.cancellation.allowed-hours-before-checkin:24}")
+	@Value("${app.booking.cancellation.allowed-hours-before-checkin:1}")
 	private int cancellationHoursBeforeCheckin;
 
 	public ResponseEntity<?> bookRoom(long roomId, long userId, int totalGuests, LocalDate checkInDate,
@@ -151,6 +154,37 @@ public class BookingService {
 	}
 
 	@Transactional
+	public ResponseEntity<?> getUserPaymentTransactions(long userId) {
+		Specification<Booking> userIdSpec = BookingSpecification.hasUserId(userId);
+		Specification<Booking> sortSpec = BookingSpecification.sortByCheckInDate("desc");
+		Specification<Booking> allFilters = userIdSpec.and(sortSpec);
+
+		List<Booking> bookings = bookingRepository.findAll(allFilters);
+		
+		List<Map<String, Object>> transactions = bookings.stream()
+			.filter(booking -> booking.getPaymentStatus() != null)
+			.map(booking -> {
+				Map<String, Object> transaction = new HashMap<>();
+				transaction.put("id", booking.getId());
+				transaction.put("transactionId", booking.getTransactionId());
+				transaction.put("amount", booking.getTotalAmount());
+				transaction.put("paymentStatus", booking.getPaymentStatus().name());
+				transaction.put("bookingStatus", booking.getBookingStatus().name());
+				transaction.put("date", booking.getCreatedAt());
+				transaction.put("checkInDate", booking.getCheckInDate());
+				transaction.put("checkOutDate", booking.getCheckOutDate());
+				transaction.put("totalGuests", booking.getTotalGuests());
+				transaction.put("hotelName", booking.getHotel() != null ? booking.getHotel().getHotelName() : "N/A");
+				transaction.put("roomType", booking.getRoom() != null ? booking.getRoom().getRoomType() : "N/A");
+				transaction.put("roomNumber", booking.getRoom() != null ? booking.getRoom().getRoomNumber() : "N/A");
+				return transaction;
+			})
+			.collect(java.util.stream.Collectors.toList());
+		
+		return universalResponse("Payment transactions fetched successfully", transactions, HttpStatus.OK);
+	}
+
+	@Transactional
 	public ResponseEntity<?> getAllBookingsByHotelId(long hotelId, String search) {
 		Optional<Hotel> existingHotel = hotelRepository.findById(hotelId);
 		if (existingHotel.isEmpty()) {
@@ -165,6 +199,14 @@ public class BookingService {
 		}
 		
 		List<Booking> bookings = bookingRepository.findAll(allFilters);
+		
+		// Debug logging
+		System.out.println("DEBUG: getAllBookingsByHotelId - HotelId: " + hotelId);
+		System.out.println("DEBUG: getAllBookingsByHotelId - Total bookings found: " + bookings.size());
+		for (Booking b : bookings) {
+			System.out.println("DEBUG: Booking ID: " + b.getId() + ", Status: " + b.getBookingStatus() + ", Payment: " + b.getPaymentStatus() + ", HotelId: " + (b.getHotel() != null ? b.getHotel().getId() : "null"));
+		}
+		
 		if (bookings.isEmpty()) {
 			return universalResponse("No bookings found for this hotel.", new java.util.ArrayList<>(), HttpStatus.OK);
 		}
@@ -190,6 +232,11 @@ public class BookingService {
 			} else {
 				booking.setBookingStatus(newStatus);
 			}
+			
+			if (newStatus == BookingStatus.CANCELLED && booking.getPaymentStatus() == PaymentStatus.PAID) {
+				booking.setPaymentStatus(PaymentStatus.REFUNDED);
+			}
+			
 			bookingRepository.save(booking);
 			
 			Room room = booking.getRoom();
@@ -353,6 +400,9 @@ public class BookingService {
 		}
 		
 		booking.setBookingStatus(BookingStatus.CANCELLED);
+		if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+			booking.setPaymentStatus(PaymentStatus.REFUNDED);
+		}
 		Booking savedBooking = bookingRepository.save(booking);
 		
 		Room room = booking.getRoom();
@@ -389,6 +439,47 @@ public class BookingService {
 		}
 		
 		return universalResponse("Booking cancelled successfully", savedBooking, HttpStatus.OK);
+	}
+
+	public ResponseEntity<?> getUserTransactions(Long userId) {
+		try {
+			Specification<Booking> userIdSpec = BookingSpecification.hasUserId(userId);
+			List<Booking> bookings = bookingRepository.findAll(userIdSpec);
+			
+			List<Map<String, Object>> transactions = new java.util.ArrayList<>();
+			for (Booking booking : bookings) {
+				Map<String, Object> transaction = new HashMap<>();
+				transaction.put("id", booking.getId());
+				transaction.put("transactionId", booking.getTransactionId());
+				transaction.put("amount", booking.getTotalAmount());
+				transaction.put("paymentStatus", booking.getPaymentStatus());
+				transaction.put("bookingStatus", booking.getBookingStatus());
+				transaction.put("date", booking.getCreatedAt());
+				transaction.put("checkInDate", booking.getCheckInDate());
+				transaction.put("checkOutDate", booking.getCheckOutDate());
+				transaction.put("hotelName", booking.getHotel() != null ? booking.getHotel().getHotelName() : "N/A");
+				transaction.put("roomType", booking.getRoom() != null ? booking.getRoom().getRoomType() : "N/A");
+				transaction.put("roomNumber", booking.getRoom() != null ? booking.getRoom().getRoomNumber() : "N/A");
+				transaction.put("totalGuests", booking.getTotalGuests());
+				transactions.add(transaction);
+			}
+			
+			transactions.sort((a, b) -> {
+				Instant dateA = (Instant) a.get("date");
+				Instant dateB = (Instant) b.get("date");
+				if (dateA == null && dateB == null) return 0;
+				if (dateA == null) return 1;
+				if (dateB == null) return -1;
+				return dateB.compareTo(dateA);
+			});
+			
+			return universalResponse("Transactions fetched successfully", transactions, HttpStatus.OK);
+		} catch (Exception e) {
+			System.err.println("Error fetching transactions: " + e.getMessage());
+			e.printStackTrace();
+			return universalResponse("Failed to fetch transactions: " + e.getMessage(), null,
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	public ResponseEntity<?> deleteBooking(long bookingId) {

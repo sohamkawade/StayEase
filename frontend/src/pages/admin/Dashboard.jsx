@@ -47,7 +47,12 @@ const Dashboard = () => {
 
       const usersData = usersRes?.data?.data ?? usersRes?.data ?? [];
       const allUsers = Array.isArray(usersData) 
-        ? usersData.filter(u => u && u.id && u.email && u.role === "USER")
+        ? usersData.filter(u => {
+            if (!u || !u.id) return false;
+            const email = u.user?.email || u.email;
+            const role = (u.role || u.user?.role || "").toUpperCase();
+            return email && role !== "ADMIN" && role !== "HOTEL_MANAGER";
+          })
         : [];
 
       const counts = await Promise.all(

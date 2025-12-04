@@ -41,7 +41,7 @@ public class BookingController {
 	) {
 		return bookingService.getUserBookings(userId, search, bookingStatus);
 	}
-	
+
 	@GetMapping("/bookings")
 	private ResponseEntity<?> getFilteredBookings(
 			@RequestParam(required = false) String search,
@@ -97,6 +97,11 @@ public class BookingController {
 			emailRequest.getSubject(),
 			emailRequest.getBody()
 		);
+	}
+
+	@GetMapping("/payments/user/{userId}")
+	public ResponseEntity<?> getUserPaymentTransactions(@PathVariable Long userId) {
+		return bookingService.getUserPaymentTransactions(userId);
 	}
 
 }

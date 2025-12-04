@@ -29,5 +29,5 @@ spring:
 app:
   booking:
     cancellation:
-      allowed-hours-before-checkin: ${CANCELLATION_HOURS:24}
+      allowed-hours-before-checkin: ${CANCELLATION_HOURS:1}
 

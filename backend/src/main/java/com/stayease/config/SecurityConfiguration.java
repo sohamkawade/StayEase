@@ -106,7 +106,7 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/status")
                     .hasAnyAuthority("ADMIN", "HOTEL_MANAGER")
                 .requestMatchers(HttpMethod.DELETE, "/api/bookings/**")
-                    .hasAnyAuthority("ADMIN", "HOTEL_MANAGER")
+                    .hasAnyAuthority("ADMIN", "HOTEL_MANAGER") 
                 .requestMatchers(
                         "/api/bookroom",
                         "/api/bookings/user/**",
@@ -114,7 +114,9 @@ public class SecurityConfiguration {
                         "/api/get-wishlist/**",
                         "/api/remove-wishlist/**",
                         "/api/feedback/submit",
-                        "/api/submit/**"
+                        "/api/submit/**",
+                        "/api/payment/**",
+                        "/api/payments/user/**"
                 ).hasAnyAuthority("USER", "ADMIN", "HOTEL_MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/bookings/*/cancel").hasAnyAuthority("USER", "ADMIN", "HOTEL_MANAGER")
                 .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/cancel/user/*").hasAnyAuthority("USER", "ADMIN", "HOTEL_MANAGER")
